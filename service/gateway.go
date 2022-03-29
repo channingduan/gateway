@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/channingduan/rpc/config"
 	"github.com/smallnest/rpcx/client"
 	"net/http"
 	"sync"
@@ -76,10 +75,11 @@ func (g *Gateway) handler(r *http.Request, servicePath string) (map[string]strin
 		return nil, nil, err
 	}
 
-	err = xc.Call(context.Background(), "hello", config.Request{}, config.Response{})
-	if err != nil {
-		fmt.Println("Call err: ", err)
-	}
+	// 直接处理
+	//err = xc.Call(context.Background(), "hello", config.Request{}, config.Response{})
+	//if err != nil {
+	//	fmt.Println("Call err: ", err)
+	//}
 
 	return xc.SendRaw(context.Background(), req)
 }

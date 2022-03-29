@@ -31,13 +31,13 @@ func (s *Server) RegisterHandler(base string, handler ServiceHandler) {
 	if g == nil {
 		g = gin.Default()
 	}
-	h := wrapServiceHandler(handler)
+	fun := wrapServiceHandler(handler)
 
 	fmt.Println("base-------:", base)
-	g.POST(base, h)
-	g.GET(base, h)
-	g.PUT(base, h)
-	g.POST("/hello/world", h)
+	g.POST(base, fun)
+	g.GET(base, fun)
+	g.PUT(base, fun)
+	g.POST("/service/hello/world", fun)
 	s.g = g
 }
 
@@ -46,8 +46,11 @@ func wrapServiceHandler(handler ServiceHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		r := ctx.Request
 		w := ctx.Writer
+		uris := strings.Split(strings.Trim(r.URL.String(), "/"), "/")
+
+		r.Header.Set(XSerializeType, "3")
 		if r.Header.Get(XServicePath) == "" {
-			servicePath := ctx.Param("servicePath")
+			servicePath := uris[0]
 			if strings.HasPrefix(servicePath, "/") {
 				servicePath = servicePath[1:]
 			}
@@ -55,6 +58,10 @@ func wrapServiceHandler(handler ServiceHandler) gin.HandlerFunc {
 		}
 
 		servicePath := r.Header.Get(XServicePath)
+		if r.Header.Get(XServiceMethod) == "" {
+			r.Header.Set(XServiceMethod, fmt.Sprintf("%s.%s", uris[1], uris[2]))
+		}
+
 		messageID := r.Header.Get(XMessageID)
 		wh := w.Header()
 		if messageID != "" {

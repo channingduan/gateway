@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"github.com/channingduan/rpc/config"
+	"github.com/smallnest/rpcx/codec"
 	"github.com/smallnest/rpcx/protocol"
 	"io/ioutil"
 	"net/http"
@@ -37,6 +40,9 @@ func HttpRequest2RPCRequest(r *http.Request) (*protocol.Message, error) {
 		}
 		req.SetSeq(id)
 	}
+
+	fmt.Println("r.Header.Get(XServicePath)1", r.Header.Get(XServicePath))
+	fmt.Println("r.Header.Get(XServiceMethod)1", r.Header.Get(XServiceMethod))
 
 	heartbeat := h.Get(XHeartbeat)
 	if heartbeat != "" {
@@ -88,12 +94,16 @@ func HttpRequest2RPCRequest(r *http.Request) (*protocol.Message, error) {
 	} else {
 		return nil, errors.New("empty service method")
 	}
-
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
-	req.Payload = payload
+	// 编码
+	cc := &codec.MsgpackCodec{}
+	args := config.Request{
+		Message: string(payload),
+	}
+	req.Payload, _ = cc.Encode(args)
 
 	return req, nil
 }

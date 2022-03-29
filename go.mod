@@ -3,6 +3,7 @@ module github.com/channingduan/gateway
 go 1.18
 
 require (
+	github.com/channingduan/rpc v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.7.7
 	github.com/smallnest/rpcx v1.7.3
 )
@@ -89,4 +90,9 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
+
+replace (
+	github.com/channingduan/rpc => ../rpc
+	github.com/smallnest/rpcx => ../../rpcxio/rpcx-1.7.3
 )

@@ -1,30 +1,29 @@
 package main
 
 import (
-	"github.com/channingduan/gateway/config"
 	"github.com/channingduan/gateway/service"
+	"github.com/channingduan/rpc/config"
+	"github.com/gin-gonic/gin"
 	"github.com/smallnest/rpcx/client"
 	"log"
 )
 
 func main() {
 
-	conf := config.Config{
-		Addr:         "127.0.0.1:9090",
-		RegistryAddr: "consul://127.0.0.1:8500",
-		BasePath:     "rpc",
-		FailMode:     int(client.Failover),
-		SelectMode:   int(client.RandomSelect),
+	conf, err := config.Register("./server.json")
+	if err != nil {
+		log.Fatal("config file error: ", err)
 	}
 
-	d, err := service.CreateServiceDiscovery(conf.BasePath, conf.RegistryAddr)
+	discovery, err := service.CreateServiceDiscovery(conf.BasePath, conf.RegistryConfig.Addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("service discovery error: ", err)
 	}
-	httpServer := service.New(conf.Addr)
-	gw := service.NewGateway("/", httpServer, d, client.FailMode(conf.FailMode), client.SelectMode(conf.SelectMode), client.DefaultOption)
+
+	httpServer := service.NewWithGin(conf, gin.Default())
+	gw := service.NewGateway("/", httpServer, discovery, client.Failover, client.RandomSelect, client.DefaultOption)
 	err = gw.Serve()
 	if err != nil {
-		log.Fatal("Serve", err)
+		log.Fatal("serve error", err)
 	}
 }

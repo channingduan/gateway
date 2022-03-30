@@ -1,44 +1,53 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"github.com/channingduan/rpc/cache"
+	"github.com/channingduan/rpc/config"
+	"github.com/channingduan/rpc/server"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
 type Server struct {
-	addr string
-	g    *gin.Engine
+	addr   string
+	srv    *gin.Engine
+	config *config.Config
+	cache  *cache.Cache
 }
 
+// New 扩展其他 HTTP Server
 func New(addr string) *Server {
 	return &Server{
 		addr: addr,
 	}
 }
 
-func NewWithGin(addr string, g *gin.Engine) *Server {
+func NewWithGin(config *config.Config, srv *gin.Engine) *Server {
 	return &Server{
-		addr: addr,
-		g:    g,
+		addr:  config.ServiceAddr,
+		srv:   srv,
+		cache: cache.Register(&config.CacheConfig),
 	}
 }
 
 func (s *Server) RegisterHandler(base string, handler ServiceHandler) {
 
-	g := s.g
-	if g == nil {
-		g = gin.Default()
+	srv := s.srv
+	if srv == nil {
+		srv = gin.Default()
 	}
 	fun := wrapServiceHandler(handler)
 
-	fmt.Println("base-------:", base)
-	g.POST(base, fun)
-	g.GET(base, fun)
-	g.PUT(base, fun)
-	g.POST("/service/hello/world", fun)
-	s.g = g
+	routers := s.cache.NewCache().SMembers(context.TODO(), server.RouterKey).Val()
+	for _, router := range routers {
+		router = strings.ReplaceAll(router, ".", "/")
+		fmt.Println("router:", router)
+		srv.POST(router, fun)
+	}
+	s.srv = srv
 }
 
 func wrapServiceHandler(handler ServiceHandler) gin.HandlerFunc {
@@ -92,5 +101,5 @@ func wrapServiceHandler(handler ServiceHandler) gin.HandlerFunc {
 }
 
 func (s *Server) Serve() error {
-	return s.g.Run(s.addr)
+	return s.srv.Run(s.addr)
 }

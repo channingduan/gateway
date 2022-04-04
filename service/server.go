@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/channingduan/gateway/middleware"
 	"github.com/channingduan/rpc/cache"
 	"github.com/channingduan/rpc/config"
 	"github.com/channingduan/rpc/server"
 	"github.com/gin-gonic/gin"
+	"github.com/oscto/ky3k"
+	"github.com/smallnest/rpcx/codec"
 	"net/http"
 	"strings"
 )
@@ -27,9 +30,10 @@ func New(addr string) *Server {
 
 func NewWithGin(config *config.Config, srv *gin.Engine) *Server {
 	return &Server{
-		addr:  config.ServiceAddr,
-		srv:   srv,
-		cache: cache.Register(&config.CacheConfig),
+		addr:   config.ServiceAddr,
+		srv:    srv,
+		config: config,
+		cache:  cache.Register(&config.CacheConfig),
 	}
 }
 
@@ -39,6 +43,8 @@ func (s *Server) RegisterHandler(base string, handler ServiceHandler) {
 	if srv == nil {
 		srv = gin.Default()
 	}
+	mw := middleware.NewMiddleware(s.config, s.cache)
+	srv.Use(mw.Authorization())
 	fun := wrapServiceHandler(handler)
 
 	routers := s.cache.NewCache().SMembers(context.TODO(), server.RouterKey).Val()
@@ -81,22 +87,27 @@ func wrapServiceHandler(handler ServiceHandler) gin.HandlerFunc {
 		for k, v := range meta {
 			wh.Set(k, v)
 		}
+
+		var response config.HttpResponse
 		if err == nil {
-			ctx.Data(http.StatusOK, "application/octet-stream", payload)
-			return
-		}
+			cc := &codec.MsgpackCodec{}
+			reply := &config.Response{}
+			err = cc.Decode(payload, reply)
+			response.Code = http.StatusOK
 
-		rh := r.Header
-		for k, v := range rh {
-			if strings.HasPrefix(k, "x-RPCX-") && len(v) > 0 {
-				wh.Set(k, v[0])
+			var data map[string]interface{}
+			if err := ky3k.StringToJson(reply.Message, &data); err != nil {
+				return
 			}
+
+			response.Data = data
+
+		} else {
+			response.Message = err.Error()
 		}
 
-		wh.Set(XMessageStatusType, "Error")
-		wh.Set(XErrorMessage, err.Error())
-
-		ctx.String(http.StatusOK, err.Error())
+		ctx.JSON(http.StatusOK, response)
+		return
 	}
 }
 

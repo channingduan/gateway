@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/channingduan/rpc v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.7.7
+	github.com/oscto/ky3k v0.0.0-20220325145211-b7dd700f58f9
 	github.com/smallnest/rpcx v1.7.3
 )
 
@@ -34,6 +35,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -84,6 +86,7 @@ require (
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rubyist/circuitbreaker v2.2.1+incompatible // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/smallnest/quick v0.0.0-20210406061658-4bf95e372fbd // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/templexxx/cpufeat v0.0.0-20180724012125-cef66df7f161 // indirect
@@ -109,6 +112,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gorm.io/datatypes v1.0.3 // indirect
 	gorm.io/driver/mysql v1.1.3 // indirect
 	gorm.io/driver/postgres v1.2.1 // indirect
 	gorm.io/gorm v1.22.2 // indirect

@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/channingduan/rpc/config"
 	"github.com/smallnest/rpcx/codec"
 	"github.com/smallnest/rpcx/protocol"
@@ -40,10 +39,6 @@ func HttpRequest2RPCRequest(r *http.Request) (*protocol.Message, error) {
 		}
 		req.SetSeq(id)
 	}
-
-	fmt.Println("r.Header.Get(XServicePath)1", r.Header.Get(XServicePath))
-	fmt.Println("r.Header.Get(XServiceMethod)1", r.Header.Get(XServiceMethod))
-
 	heartbeat := h.Get(XHeartbeat)
 	if heartbeat != "" {
 		req.SetHeartbeat(true)

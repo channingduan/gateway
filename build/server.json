@@ -7,6 +7,12 @@
     "driver":"consul",
     "addr":"consul://127.0.0.1:8500"
   },
+  "token_config": {
+    "access_secret": "hello.test",
+    "refresh_secret": "test.hello",
+    "access_expire": 15,
+    "refresh_expire": 10080
+  },
   "database_config":{
     "default":{
       "driver":"mysql",
